@@ -1,0 +1,12 @@
+{
+  "autoPin": true,
+  "pins": [
+    {
+      "package": "Pcap",
+      "reason": null,
+      "repositoryURL": "/Users/sahara/src/Unclog/Pcap",
+      "version": "1.0.0"
+    }
+  ],
+  "version": 1
+}
