@@ -42,6 +42,12 @@ public class TCPPacket: BasePacket {
         }
     }
 
+    var data_offset: Int {
+        get {
+            return Int(getu8(12) >> 4)
+        }
+    }
+
     var flags: UInt8 {
         get {
             return getu8(13)
@@ -69,6 +75,12 @@ public class TCPPacket: BasePacket {
     var fivetuple: FiveTuple {
         get {
             return FiveTuple(srcip: self.ip.src, srcport: self.srcport, dstip: self.ip.dst, dstport: self.dstport, proto: UInt8(IPPROTO_TCP))
+        }
+    }
+
+    var payload_length: Int {
+        get {
+            return (self.ip as! IPv4Packet).payload_length - self.data_offset
         }
     }
 }
