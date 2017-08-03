@@ -48,10 +48,10 @@ while true {
         }
         if tcp.syn == 0 && tcp.ack == 1 {
             if let flow = flowtable[tcp.fivetuple] {
-                flow.input(to: .server, pkt: tcp)
+                flow.input(to: .server, tcp: tcp)
             }
             if let flow = flowtable[tcp.fivetuple.reverse()] {
-                flow.input(to: .client, pkt: tcp)
+                flow.input(to: .client, tcp: tcp)
             }
         }
     }
