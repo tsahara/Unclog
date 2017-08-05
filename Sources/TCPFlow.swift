@@ -50,20 +50,28 @@ class TCPFlow : Hashable {
     }
 
     func input(to: DirectedTo, tcp: TCPPacket) {
-        var state = self.state(to)
+        self.packets.append(tcp)
+
         if tcp.syn == 1 {
-            state.isn = tcp.seqnum
+            switch to {
+            case .server:
+                client_state.isn = tcp.seqnum
+            case .client:
+                server_state.isn = tcp.seqnum
+            }
         }
 
-        if tcp.syn == 1 || tcp.ack == 0 {
-            self.packets.append(tcp)
+        let state = self.state(to)
+        let receiver_state = self.state(to.reverse)
+
+        if tcp.ack == 0 {
             return
         }
 
         let datapkt = find_packet {
-            if let isn = state.isn {
+            if let isn = state.isn, let r_isn = receiver_state.isn {
                 if ($0.seqnum > isn) {
-                    print("old tcp seqnum=\($0.seqnum - isn), plen=\($0.payload_length) new tcp: ack=\(tcp.acknum)")
+                    print("tcp seq=+\($0.seqnum - isn), plen=\($0.payload_length) new tcp: ack=\(tcp.acknum - r_isn)")
                 }
             }
             return $0.seqnum < tcp.acknum && $0.seqnum + UInt32($0.payload_length) >= tcp.acknum
@@ -101,6 +109,17 @@ class TCPFlow : Hashable {
 enum DirectedTo {
     case client
     case server
+
+    var reverse: DirectedTo {
+        get {
+            switch self {
+            case .client:
+                return .server
+            case .server:
+                return .client
+            }
+        }
+    }
 }
 
 class TCPState {

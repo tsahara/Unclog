@@ -39,7 +39,7 @@ while true {
         }
         if tcp.syn == 1 && tcp.ack == 1 {
             if let flow = flowtable[tcp.fivetuple.reverse()] {
-                print("flos found")
+                flow.input(to: .client, tcp: tcp)
                 if let syn = flow.find_packet(cond: { $0.syn == 1 }) {
                     let rtt = pkt.timestamp.timeIntervalSince(syn.pkt.timestamp)
                     print("rtt = \(rtt)")
