@@ -13,6 +13,7 @@ import Foundation
 public class TCPPacket: BasePacket {
     let ip: IPPacket
 
+
     init(ipv4: IPv4Packet) {
         self.ip = ipv4
         super.init(pkt: ipv4.pkt, offset: ipv4.header_offset + 20)
