@@ -8,7 +8,7 @@
 
 import Foundation
 
-class IPv4Address: IPAddress {
+class IPv4Address: IPAddress, CustomStringConvertible {
     var num: UInt32
     
     init(data: Data, offset: Int) {
@@ -41,4 +41,11 @@ class IPv4Address: IPAddress {
             return String(format: "%u.%u.%u.%u", (num >> 24) % 256, (num >> 16) % 256, (num >> 8) % 256, num % 256)
         }
     }
+
+    var description: String {
+        get {
+            return self.string
+        }
+    }
+
 }

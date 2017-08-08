@@ -52,6 +52,9 @@ class TCPFlow : Hashable {
     func input(to: DirectedTo, tcp: TCPPacket) {
         self.packets.append(tcp)
 
+        let state = self.state(to)
+        let receiver_state = self.state(to.reverse)
+
         if tcp.syn == 1 {
             switch to {
             case .server:
@@ -61,8 +64,13 @@ class TCPFlow : Hashable {
             }
         }
 
-        let state = self.state(to)
-        let receiver_state = self.state(to.reverse)
+        if tcp.fin == 1 {
+            state.fin_received = true
+            if receiver_state.fin_received {
+                print("connection closed")
+                print_statistics()
+            }
+        }
 
         if tcp.ack == 0 {
             return
@@ -104,6 +112,10 @@ class TCPFlow : Hashable {
             return server_state
         }
     }
+
+    func print_statistics() {
+        print("TCP \(srcip) port \(srcport) -> \(dstip) port \(dstport)")
+    }
 }
 
 enum DirectedTo {
@@ -126,4 +138,6 @@ class TCPState {
     var isn: UInt32? = nil
     var last_seq: UInt32? = nil
     var last_ack: UInt32? = nil
+
+    var fin_received = false
 }
