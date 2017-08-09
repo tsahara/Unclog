@@ -12,11 +12,16 @@ import Foundation
 
 public class TCPPacket: BasePacket {
     let ip: IPPacket
-
+    let options: [TCPOption]
 
     init(ipv4: IPv4Packet) {
         self.ip = ipv4
+        self.options = TCPPacket.parse_options()
         super.init(pkt: ipv4.pkt, offset: ipv4.header_offset + 20)
+    }
+
+    static func parse_options() -> [TCPOption] {
+        return []
     }
 
     var srcport: UInt16 {
