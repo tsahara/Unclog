@@ -17,7 +17,7 @@ public class TCPPacket: BasePacket {
     init(ipv4: IPv4Packet) {
         self.ip = ipv4
         self.options = TCPPacket.parse_options()
-        super.init(pkt: ipv4.pkt, offset: ipv4.header_offset + 20)
+        super.init(pkt: ipv4.pkt, offset: ipv4.header_offset + ipv4.ihl * 4)
     }
 
     static func parse_options() -> [TCPOption] {
@@ -50,7 +50,7 @@ public class TCPPacket: BasePacket {
 
     var data_offset: Int {
         get {
-            return Int(getu8(12) >> 4)
+            return Int((getu8(12) & 0xf0) >> 2)
         }
     }
 

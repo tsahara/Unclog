@@ -50,18 +50,11 @@ class TCPFlow : Hashable {
     }
 
     func input(to: DirectedTo, tcp: TCPPacket) {
-        self.packets.append(tcp)
-
         let state = self.state(to)
         let receiver_state = self.state(to.reverse)
 
         if tcp.syn == 1 {
-            switch to {
-            case .server:
-                client_state.isn = tcp.seqnum
-            case .client:
-                server_state.isn = tcp.seqnum
-            }
+            state.isn = tcp.seqnum
         }
 
         if tcp.fin == 1 {
@@ -72,16 +65,14 @@ class TCPFlow : Hashable {
             }
         }
 
-        if tcp.ack == 0 {
-            return
-        }
-
-        let datapkt = find_packet {
-            return $0.seqnum < tcp.acknum && $0.seqnum + UInt32($0.payload_length) >= tcp.acknum
-        }
-        if datapkt != nil {
-            let rtt = tcp.pkt.timestamp.timeIntervalSince(datapkt!.pkt.timestamp)
-            print("-> \(rtt)")
+        if tcp.ack == 1 {
+//            let datapkt = find_packet {
+//                return $0.seqnum < tcp.acknum && $0.seqnum + UInt32($0.payload_length) >= tcp.acknum
+//            }
+//            if datapkt != nil {
+//                //let rtt = tcp.pkt.timestamp.timeIntervalSince(datapkt!.pkt.timestamp)
+//                //print("-> \(rtt)")
+//            }
         }
         if to == .server {
             if client_state.last_seq == nil {
@@ -95,6 +86,14 @@ class TCPFlow : Hashable {
         if to == .server {
             client_state.last_seq = tcp.seqnum
             client_state.last_ack = tcp.acknum
+        }
+
+        print("TSN = \(state.tsn), seq = \(tcp.seqnum) => \(tcp.payload_length) (syn=\(tcp.syn))")
+
+        if tcp.syn == 1 {
+            state.tsn = tcp.seqnum &+ 1
+        } else {
+            state.tsn = tcp.seqnum &+ UInt32(tcp.payload_length)
         }
         self.packets.append(tcp)
     }
@@ -133,6 +132,9 @@ class TCPState {
     var isn: UInt32? = nil
     var last_seq: UInt32? = nil
     var last_ack: UInt32? = nil
+
+    // Transmit Sequence Number: sequence number of the first byte of the next packet
+    var tsn: UInt32 = 0
 
     var fin_received = false
 }
