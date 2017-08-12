@@ -88,7 +88,17 @@ class TCPFlow : Hashable {
             client_state.last_ack = tcp.acknum
         }
 
-        print("TSN = \(state.tsn), seq = \(tcp.seqnum) => \(tcp.payload_length) (syn=\(tcp.syn))")
+        let arrow = (to == .server) ? "-->" : "<--"
+
+        if tcp.syn == 1 && tcp.ack == 0 {
+            print("\(arrow) SYN")
+        } else if tcp.syn == 1 && tcp.ack == 1 {
+            print("\(arrow) SYN/ACK")
+        } else if tcp.payload_length == 0 && tcp.ack == 1 {
+            print("\(arrow) ACK")
+        } else {
+            print("\(arrow) TSN = \(state.tsn), seq = \(tcp.seqnum) => \(tcp.payload_length)")
+        }
 
         if tcp.syn == 1 {
             state.tsn = tcp.seqnum &+ 1
