@@ -16,6 +16,14 @@ class TCPOption {
         self.kind = Int(kind)
         self.length = Int(length)
     }
+
+    static func parse(kind: UInt8, length: UInt8, data: Data, ptr: Int) -> TCPOption {
+        return UnknownTCPOption(kind: kind, length: length)
+    }
+}
+
+class TCPTimeStampOption {
+    
 }
 
 class UnknownTCPOption : TCPOption {
