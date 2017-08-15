@@ -40,3 +40,9 @@ class PcapPacket {
         }
     }
 }
+
+extension Date {
+    static func -(a: Date, b: Date) -> TimeInterval {
+        return a.timeIntervalSince(b)
+    }
+}

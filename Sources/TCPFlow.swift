@@ -17,11 +17,15 @@ class TCPFlow : Hashable {
     var client_state = TCPState()
     var server_state = TCPState()
 
+    let time_created: Date
+
     init(syn tcp: TCPPacket) {
         self.srcip   = tcp.ip.src
         self.srcport = tcp.srcport
         self.dstip   = tcp.ip.dst
         self.dstport = tcp.dstport
+
+        self.time_created = tcp.pkt.timestamp
 
         self.packets.append(tcp)
 
@@ -89,16 +93,20 @@ class TCPFlow : Hashable {
         }
 
         let arrow = (to == .server) ? "-->" : "<--"
+        let timeoffset = tcp.pkt.timestamp - self.time_created
+
+        var line = arrow + String(format: " %.6f ", timeoffset)
 
         if tcp.syn == 1 && tcp.ack == 0 {
-            print("\(arrow) SYN")
+            line += "SYN"
         } else if tcp.syn == 1 && tcp.ack == 1 {
-            print("\(arrow) SYN/ACK")
+            line += "SYN/ACK"
         } else if tcp.payload_length == 0 && tcp.ack == 1 {
-            print("\(arrow) ACK")
+            line += "ACK"
         } else {
-            print("\(arrow) TSN = \(state.tsn), seq = \(tcp.seqnum) => \(tcp.payload_length)")
+            line += "TSN = \(state.tsn), seq = \(tcp.seqnum) => \(tcp.payload_length)"
         }
+        print(line)
 
         if tcp.syn == 1 {
             state.tsn = tcp.seqnum &+ 1
