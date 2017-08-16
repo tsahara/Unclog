@@ -1,14 +1,18 @@
 import Pcap
 import Foundation
 
-let vers = String(cString: pcap_lib_version()!)
-print("Hello, world = \(vers)!")
+var errbuf = [CChar](repeating: 0, count: Int(PCAP_ERRBUF_SIZE))
+let pcap: OpaquePointer
 
-// Pcap
+if CommandLine.argc > 1 {
+    let filename = CommandLine.arguments[1]
+    pcap = pcap_open_offline(filename, &errbuf)
+} else {
+    pcap = pcap_create("en0", &errbuf)
+}
+// check if pcap != nil
 
-var errbuf = [Int8](repeating: 0, count: 2048)
-let pcap = pcap_create("en0", &errbuf)
-print("err =\(pcap!)")
+print("err =\(errbuf)")
 
 pcap_set_snaplen(pcap, 128)
 pcap_set_timeout(pcap, 1000)
