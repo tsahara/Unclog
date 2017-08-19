@@ -58,5 +58,7 @@ while true {
                 flow.input(to: .client, tcp: tcp)
             }
         }
+    } else if error == -2 {
+        break
     }
 }
