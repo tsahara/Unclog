@@ -19,6 +19,9 @@ pcap_set_timeout(pcap, 1000)
 pcap_activate(pcap)
 print("snapshot = \(pcap_snapshot(pcap))")
 
+let linktype = pcap_datalink(pcap)
+print("linktype = \(String(cString: pcap_datalink_val_to_name(linktype)))")
+
 var hdr: UnsafeMutablePointer<pcap_pkthdr>?
 var data: UnsafePointer<UInt8>?
 
