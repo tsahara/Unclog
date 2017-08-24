@@ -86,21 +86,39 @@ public class TCPPacket: BasePacket {
         }
     }
     
-    var fin: Int {
+    var ack: Int {
         get {
-            return Int(flags) & 1
+            return Int(flags >> 4) & 1
         }
     }
-    
+
     var syn: Int {
         get {
             return Int(flags >> 1) & 1
         }
     }
 
-    var ack: Int {
+    var fin: Int {
         get {
-            return Int(flags >> 4) & 1
+            return Int(flags) & 1
+        }
+    }
+
+    var window: UInt16 {
+        get {
+            return getu16(14)
+        }
+    }
+
+    var checksum: UInt16 {
+        get {
+            return getu16(16)
+        }
+    }
+
+    var urgent_pointer: UInt16 {
+        get {
+            return getu16(18)
         }
     }
 
