@@ -9,6 +9,10 @@
 import Foundation
 
 extension Data {
+    public func getu8(_ offset: Int) -> UInt8 {
+        return self[offset]
+    }
+
     public func getu32(_ offset: Int) -> UInt32 {
         var val = UInt32(self[offset]) << 24
         val |= UInt32(self[offset+1]) << 16

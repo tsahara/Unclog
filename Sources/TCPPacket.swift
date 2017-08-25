@@ -44,10 +44,10 @@ public class TCPPacket: BasePacket {
                 }
             }
 
-            options.append(TCPOption.parse(kind: kind, length: length, data: pkt.data, ptr: i + 2))
+            options.append(TCPOption.parse(kind: kind, length: length, data: pkt.data, ptr: option_offset + i + 2))
             i += Int(length)
         }
-        return []
+        return options
     }
 
     var srcport: UInt16 {

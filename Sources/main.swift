@@ -2,7 +2,7 @@ import Pcap
 import Foundation
 
 var errbuf = [CChar](repeating: 0, count: Int(PCAP_ERRBUF_SIZE))
-let pcap: OpaquePointer
+let pcap: OpaquePointer?
 
 if CommandLine.argc > 1 {
     let filename = CommandLine.arguments[1]
@@ -11,8 +11,9 @@ if CommandLine.argc > 1 {
     pcap = pcap_create("en0", &errbuf)
 }
 // check if pcap != nil
-
-print("err =\(errbuf)")
+if pcap == nil {
+    print("err =\(errbuf)")
+}
 
 pcap_set_snaplen(pcap, 128)
 pcap_set_timeout(pcap, 1000)

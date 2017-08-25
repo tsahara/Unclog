@@ -98,13 +98,13 @@ class TCPFlow : Hashable {
         var line = arrow + String(format: " %.6f ", timeoffset)
 
         if tcp.syn == 1 && tcp.ack == 0 {
-            line += "SYN"
+            line += "SYN options=\(tcp.options)"
         } else if tcp.syn == 1 && tcp.ack == 1 {
-            line += "SYN/ACK"
+            line += "SYN/ACK options=\(tcp.options)"
         } else if tcp.payload_length == 0 && tcp.ack == 1 {
             line += "ACK window=\(tcp.window)"
         } else {
-            line += "TSN = \(state.tsn), seq = \(tcp.seqnum) => \(tcp.payload_length) window=\(tcp.window)"
+            line += "TSN = \(state.tsn), seq = \(tcp.seqnum) => \(tcp.payload_length) window=\(tcp.window) options=\(tcp.options)"
         }
         print(line)
 
