@@ -59,6 +59,12 @@ class TCPFlow : Hashable {
 
         if tcp.syn == 1 {
             state.isn = tcp.seqnum
+
+            for opt in tcp.options {
+                if opt.kind == Int(TCPOPT_WINDOW) {
+                    state.window_scale = Int((opt as! TCPWindowScaleOption).shift_cnt)
+                }
+            }
         }
 
         if tcp.fin == 1 {
@@ -153,6 +159,8 @@ class TCPState {
 
     // Transmit Sequence Number: sequence number of the first byte of the next packet
     var tsn: UInt32 = 0
+
+    var window_scale: Int?
 
     var fin_received = false
 }

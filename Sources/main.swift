@@ -4,6 +4,8 @@ import Foundation
 var errbuf = [CChar](repeating: 0, count: Int(PCAP_ERRBUF_SIZE))
 let pcap: OpaquePointer?
 
+let pktap = true
+
 if CommandLine.argc > 1 {
     let filename = CommandLine.arguments[1]
     pcap = pcap_open_offline(filename, &errbuf)
@@ -13,6 +15,7 @@ if CommandLine.argc > 1 {
 // check if pcap != nil
 if pcap == nil {
     print("err =\(errbuf)")
+    exit(1)
 }
 
 pcap_set_snaplen(pcap, 128)
