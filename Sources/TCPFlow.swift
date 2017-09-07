@@ -12,8 +12,6 @@ class TCPFlow : Hashable {
     let srcip, dstip: IPAddress
     let srcport, dstport: UInt16
 
-    var packets: [TCPPacket] = []
-
     var client_state = TCPState()
     var server_state = TCPState()
 
@@ -27,7 +25,7 @@ class TCPFlow : Hashable {
 
         self.time_created = tcp.pkt.timestamp
 
-        self.packets.append(tcp)
+        client_state.append(pkt: tcp)
 
         input(to: .server, tcp: tcp)
     }
@@ -42,15 +40,6 @@ class TCPFlow : Hashable {
     // for Hashable:Equatable
     static func == (lhs: TCPFlow, rhs: TCPFlow) -> Bool {
         return lhs.srcip == rhs.srcip && lhs.dstip == rhs.dstip && lhs.srcport == rhs.srcport && lhs.dstport == rhs.dstport
-    }
-
-    func find_packet(cond: (TCPPacket) -> Bool) -> TCPPacket? {
-        for tcp in packets {
-            if cond(tcp) {
-                return tcp
-            }
-        }
-        return nil
     }
 
     func input(to: DirectedTo, tcp: TCPPacket) {
@@ -76,14 +65,16 @@ class TCPFlow : Hashable {
         }
 
         if tcp.ack == 1 {
-//            let datapkt = find_packet {
-//                return $0.seqnum < tcp.acknum && $0.seqnum + UInt32($0.payload_length) >= tcp.acknum
-//            }
-//            if datapkt != nil {
-//                //let rtt = tcp.pkt.timestamp.timeIntervalSince(datapkt!.pkt.timestamp)
-//                //print("-> \(rtt)")
-//            }
+            let datapkt = state.find_packet {
+                return $0.seqnum < tcp.acknum && $0.seqnum + UInt32($0.payload_length) >= tcp.acknum
+            }
+            if datapkt != nil {
+                //let rtt = tcp.pkt.timestamp.timeIntervalSince(datapkt!.pkt.timestamp)
+                //print("-> \(rtt)")
+            }
+
         }
+
         if to == .server {
             if client_state.last_seq == nil {
                 client_state.last_seq = tcp.seqnum
@@ -119,7 +110,8 @@ class TCPFlow : Hashable {
         } else {
             state.tsn = tcp.seqnum &+ UInt32(tcp.payload_length)
         }
-        self.packets.append(tcp)
+
+        state.append(pkt: tcp)
     }
 
     func state(_ to: DirectedTo) -> TCPState {
@@ -163,4 +155,20 @@ class TCPState {
     var window_scale: Int?
 
     var fin_received = false
+
+    // TCP packets sent by that TCP endpoint
+    var packets: [TCPPacket] = []
+
+    func append(pkt: TCPPacket) {
+        packets.append(pkt)
+    }
+
+    func find_packet(cond: (TCPPacket) -> Bool) -> TCPPacket? {
+        for tcp in packets {
+            if cond(tcp) {
+                return tcp
+            }
+        }
+        return nil
+    }
 }
