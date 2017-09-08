@@ -65,7 +65,7 @@ class TCPFlow : Hashable {
         }
 
         if tcp.ack == 1 {
-            let datapkt = state.find_packet {
+            let datapkt = receiver_state.find_packet {
                 return $0.seqnum < tcp.acknum && $0.seqnum + UInt32($0.payload_length) >= tcp.acknum
             }
             if datapkt != nil {
