@@ -17,6 +17,8 @@ class TCPFlow : Hashable {
 
     let time_created: Date
 
+    let up_flow: TLSFlow
+
     init(syn tcp: TCPPacket) {
         self.srcip   = tcp.ip.src
         self.srcport = tcp.srcport
@@ -27,6 +29,9 @@ class TCPFlow : Hashable {
 
         client_state.append(pkt: tcp)
 
+        //if self.dstport == 443 {
+        self.up_flow = TLSFlow()
+        
         input(to: .server, tcp: tcp)
     }
 
