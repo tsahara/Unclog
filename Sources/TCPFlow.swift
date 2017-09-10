@@ -19,6 +19,9 @@ class TCPFlow : Hashable {
 
     let up_flow: TLSFlow
 
+    // number of bytes has been passed to upper layer
+    var up_offset = 0
+
     init(syn tcp: TCPPacket) {
         self.srcip   = tcp.ip.src
         self.srcport = tcp.srcport
@@ -67,6 +70,19 @@ class TCPFlow : Hashable {
                 print("connection closed")
                 print_statistics()
             }
+        }
+
+        if tcp.syn == 0 && tcp.fin == 0 && tcp.payload_length > 0 {
+            if tcp.seqnum == state.isn! + 1 {
+                print("first data segment")
+                tcp.data.withUnsafeBytes {
+                    ptr in
+                    state.up_data.append(ptr + tcp.data_offset, count: tcp.payload_length)
+                }
+
+            }
+            // pass data to upper layer
+            //up_offset + up_data.count
         }
 
         if tcp.ack == 1 {
@@ -163,6 +179,8 @@ class TCPState {
 
     // TCP packets sent by that TCP endpoint
     var packets: [TCPPacket] = []
+
+    var up_data = Data()
 
     func append(pkt: TCPPacket) {
         packets.append(pkt)
