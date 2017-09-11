@@ -73,16 +73,7 @@ class TCPFlow : Hashable {
         }
 
         if tcp.syn == 0 && tcp.fin == 0 && tcp.payload_length > 0 {
-            if tcp.seqnum == state.isn! + 1 {
-                print("first data segment")
-                tcp.data.withUnsafeBytes {
-                    ptr in
-                    state.up_data.append(ptr + tcp.data_offset, count: tcp.payload_length)
-                }
-
-            }
-            // pass data to upper layer
-            //up_offset + up_data.count
+            state.send_window.add(pkt: tcp)
         }
 
         if tcp.ack == 1 {
@@ -94,20 +85,17 @@ class TCPFlow : Hashable {
                 //print("-> \(rtt)")
             }
 
+            receiver_state.last_ack = tcp.acknum
         }
 
         if to == .server {
             if client_state.last_seq == nil {
                 client_state.last_seq = tcp.seqnum
             }
-            if client_state.last_ack == nil {
-                client_state.last_ack = tcp.acknum
-            }
         }
 
         if to == .server {
             client_state.last_seq = tcp.seqnum
-            client_state.last_ack = tcp.acknum
         }
 
         let arrow = (to == .server) ? "-->" : "<--"
@@ -180,6 +168,8 @@ class TCPState {
     // TCP packets sent by that TCP endpoint
     var packets: [TCPPacket] = []
 
+    var send_window = TCPWindow()
+
     var up_data = Data()
 
     func append(pkt: TCPPacket) {
@@ -193,5 +183,28 @@ class TCPState {
             }
         }
         return nil
+    }
+}
+
+class TCPWindow {
+    var left: UInt32 = 0
+    var first_block_length = 0
+
+    var packets: [TCPPacket] = []
+
+    func add(pkt new: TCPPacket) {
+        if packets.count == 0 {
+            self.left = new.seqnum
+            self.first_block_length = new.payload_length
+        } else {
+            for i in 0..<packets.count {
+                if new.seqnum < packets[i].seqnum {
+                    self.packets.insert(new, at: i)
+                    return
+                }
+            }
+            self.packets.append(new)
+            self.first_block_length += new.payload_length
+        }
     }
 }
