@@ -186,25 +186,42 @@ class TCPState {
     }
 }
 
-class TCPWindow {
+class TCPWindow {  // or Packet Reassembly Queue ???
     var left: UInt32 = 0
-    var first_block_length = 0
+    var head_block_size: Int64 = 0
 
     var packets: [TCPPacket] = []
 
     func add(pkt new: TCPPacket) {
         if packets.count == 0 {
             self.left = new.seqnum
-            self.first_block_length = new.payload_length
+            self.head_block_size = Int64(new.payload_length)
         } else {
             for i in 0..<packets.count {
                 if new.seqnum < packets[i].seqnum {
                     self.packets.insert(new, at: i)
+                    if i > 0 {
+                        let overwrap = Int64(self.left) + self.head_block_size - Int64(new.seqnum)
+                        if overwrap >= 0 {
+                            self.head_block_size += Int64(new.seqnum) - overwrap
+                            for i in i..<packets.count {
+                                let overwrap = Int64(self.left) + self.head_block_size - Int64(packets[i].seqnum)
+                                if overwrap >= 0 {
+                                    self.head_block_size += Int64(packets[i].seqnum) - overwrap
+                                } else {
+                                    break
+                                }
+                            }
+                        }
+                    }
                     return
                 }
             }
             self.packets.append(new)
-            self.first_block_length += new.payload_length
+            let overwrap = Int64(self.left) + self.head_block_size - Int64(new.seqnum)
+            if overwrap >= 0 {
+                self.head_block_size += Int64(packets.last!.seqnum) - overwrap
+            }
         }
     }
 }
