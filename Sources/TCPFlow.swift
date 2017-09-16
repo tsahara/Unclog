@@ -74,6 +74,7 @@ class TCPFlow : Hashable {
 
         if tcp.syn == 0 && tcp.fin == 0 && tcp.payload_length > 0 {
             state.send_window.add(pkt: tcp)
+            print("window first continuous block: \(state.send_window.head_block_size)")
         }
 
         if tcp.ack == 1 {
@@ -187,15 +188,16 @@ class TCPState {
 }
 
 class TCPWindow {  // or Packet Reassembly Queue ???
-    var left: UInt32 = 0
+    var left: UInt64 = 0
     var head_block_size: Int64 = 0
 
     var packets: [TCPPacket] = []
 
     func add(pkt new: TCPPacket) {
         if packets.count == 0 {
-            self.left = new.seqnum
+            self.left = UInt64(new.seqnum)
             self.head_block_size = Int64(new.payload_length)
+            self.packets.append(new)
         } else {
             for i in 0..<packets.count {
                 if new.seqnum < packets[i].seqnum {
