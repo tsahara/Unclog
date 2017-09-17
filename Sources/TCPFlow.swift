@@ -111,7 +111,7 @@ class TCPFlow : Hashable {
         } else if tcp.payload_length == 0 && tcp.ack == 1 {
             line += "ACK window=\(tcp.window)"
         } else {
-            line += "TSN = \(state.tsn), seq = \(tcp.seqnum) => \(tcp.payload_length) window=\(tcp.window) options=\(tcp.options)"
+            line += "TSN = \(state.tsn), seq = \(tcp.seqnum) => \(tcp.payload_length) window=\(tcp.window)"
         }
         print(line)
 
