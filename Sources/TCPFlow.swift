@@ -108,6 +108,11 @@ class TCPFlow : Hashable {
             line += "SYN options=\(tcp.options)"
         } else if tcp.syn == 1 && tcp.ack == 1 {
             line += "SYN/ACK options=\(tcp.options)"
+
+            if let syn = receiver_state.find_packet(cond: { $0.syn == 1 }) {
+                let rtt = tcp.pkt.timestamp.timeIntervalSince(syn.pkt.timestamp)
+                print("syn rtt = \(rtt)")
+            }
         } else if tcp.payload_length == 0 && tcp.ack == 1 {
             line += "ACK window=\(tcp.window)"
         } else {
